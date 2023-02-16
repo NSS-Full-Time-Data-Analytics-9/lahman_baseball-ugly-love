@@ -24,11 +24,19 @@ WHEN f.pos IN ('P','C') THEN 'Battery' END AS position,sum(po) AS putouts
 from fielding As F
 WHERE yearid=2016
 GROUP BY position;
---5
-SELECT batting.yearid/10*10 AS decades_batting,pitching.yearid/10*10 AS pitching_year,
-round(avg(batting.so),2) AS avg_batting,round(avg(pitching.so),2) AS avg_pitching,round(avg(batting.hr),2) AS avg_batting_hr,round(avg(pitching.hr),2) AS avg_pitching_hr
-FROM PEOPLE INNER JOIN batting USING (playerid) 
-			INNER JOIN pitching USING (playerid)
-WHERE batting.so IS NOT NULL
-group BY batting.so,batting.so,pitching.so,batting.hr,pitching.hr,batting.yearid/10*10,pitching.yearid/10*10
-ORDER BY batting.yearid/10*10,pitching.yearid/10*10
+--5 theres more strike outs though the decades
+SELECT (yearid)/10*10 AS decade, ROUND(AVG(so),2) AS avg_strike, ROUND(AVG(hr)/10*10,2) AS avg_homerun
+FROM teams
+WHERE yearid BETWEEN 1920 AND 2016
+GROUP BY (yearid)/10*10
+ORDER BY decade ASC;
+--6
+SELECT p.playerid,b.playerid, p.namefirst, p.namelast,b.sb,b.cs,b.yearid, ROUND((b.sb::decimal/(b.sb::decimal+b.cs::decimal)*100),2)AS percentsuccess
+FROM people AS p
+INNER JOIN batting AS b ON b.playerid = p.playerid
+WHERE b.sb IS NOT NULL
+AND b.cs IS NOT NULL
+AND yearid = '2016'
+AND b.sb+b.cs >= 20
+ORDER BY percentsuccess DESC;
+
